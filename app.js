@@ -1,7 +1,10 @@
 const express = require('express');
-const todoRoutes = require('./routes/todo.js')
+const todoRoutes = require('./routes/tododb.js')
 const app = express();
-const port = 3000;
+
+//untuk mengimport dotenv 
+require('dotenv').config();
+const port = process.env.PORT;
 
 app.use(express.json());
 
@@ -16,5 +19,5 @@ app.get('/contact', (req,res) => {
 });
 
 app.listen(port,()=>{
-    console.log(`Server running at http://localhost: ${port}/`);
+    console.log(`Server running at http://localhost:${port}/`);
 });
