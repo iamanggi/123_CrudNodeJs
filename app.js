@@ -1,59 +1,67 @@
-const express = require('express');
-const todoRoutes = require('./routes/tododb.js')
-const app = express();
+const express = require('express');                                     // Mengimpor modul Express untuk membuat aplikasi web.
+const todoRoutes = require('./routes/tododb.js')                        // Mengimpor rute untuk operasi todo dari file 'tododb.js'.
+const app = express();                                                  // Membuat instance dari aplikasi Express.
 
 //untuk mengimport dotenv 
-require('dotenv').config();
-const port = process.env.PORT;
+require('dotenv').config();                                             // Mengimpor dotenv untuk menggunakan variabel lingkungan dari file .env
+const port = process.env.PORT;                                          // Mengambil nilai PORT dari file .env untuk digunakan di server.
 
 // pertemuan ke 7
-const session = require('express-session');
-const authRoutes = require('./routes/authRoutes');
-const { isAuthenticated } = require('./middlewares/middleware.js');
+const session = require('express-session');                             // mengimpor session untuk mengatur sesi pengguna
+const authRoutes = require('./routes/authRoutes');                      // Mengimpor rute otentikasi dari 'authRoutes.js'.
+const { isAuthenticated } = require('./middlewares/middleware.js');     // Mengimpor middleware untuk memeriksa autentikasi pengguna.
 
 
-const expressLayout = require('express-ejs-layouts')
-const db = require('./database/db');
+const expressLayout = require('express-ejs-layouts')                    // Menggunakan express-ejs-layouts untuk menyusun layout EJS
+const db = require('./database/db');                                    // Mengimpor konfigurasi koneksi database.
 
-app.use(expressLayout);
-app.use(express.json());
-app.use('/todos', todoRoutes);
-app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
+app.use(expressLayout);                                                 // Menyeting middleware untuk layout EJS
+app.use(express.json());                                                // Middleware untuk menangani data JSON.
+app.use('/todos', todoRoutes);                                          // Menyambungkan rute '/todos' dengan file 'tododb.js'.
+app.set('view engine', 'ejs');                                          // Menyeting template engine ke EJS.
+app.use(express.urlencoded({ extended: true }));                        // Middleware untuk menangani data URL encoded.
+app.use(express.static('public'));
 
-// Konfigurasi express-session
+
+// Konfigurasi express-session untuk pengelolaan sesi pengguna
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false } // Set ke true jika menggunakan HTTPS
+    secret: process.env.SESSION_SECRET,                                 // Menggunakan SESSION_SECRET dari file .env.
+    resave: false,                                                      // Menentukan apakah sesi harus disimpan kembali jika tidak ada perubahan.
+    saveUninitialized: false,                                           // Menentukan apakah sesi yang belum diinisialisasi harus disimpan.
+    cookie: { secure: false }                                           // Set ke true jika menggunakan HTTPS (untuk keamanan cookie).
 }));
 
-app.use('/', authRoutes);
+app.use('/', authRoutes);                                               // Menyambungkan rute otentikasi ke root '/'.
 
-app.get('/',isAuthenticated, (req,res) => {
+app.get('/',isAuthenticated, (req,res) => {                             // Rute untuk halaman utama (home) dengan pengecekan autentikasi menggunakan middleware
     res.render('index',{
-        layout: 'layouts/main_layouts'
+        layout: 'layouts/main_layouts',                                  // Menggunakan layout 'main_layouts' untuk halaman ini.
+        page: 'home'
     });
 });
 
-
+// Rute untuk halaman kontak dengan pengecekan autentikasi
 app.get('/contact',isAuthenticated, (req,res) => {
     res.render('contact', {
-        layout: 'layouts/main_layouts'
+        layout: 'layouts/main_layouts',                                  // Menggunakan layout 'main_layouts' untuk halaman ini.
+        page: 'contact'
     });
 });
 
+// Rute untuk menampilkan daftar todo dengan pengecekan autentikasi
 app.get('/todo-view',isAuthenticated, (req, res) => {
+    // Query untuk mengambil semua data todos dari database
     db.query('SELECT * FROM todos', (err, todos) => {
-        if (err) return res.status(500).send('Internal Server Error');
+        if (err) return res.status(500).send('Internal Server Error');   // Menangani error jika terjadi kesalahan.
         res.render('todo', {
             layout: 'layouts/main_layouts',
-            todos: todos
+            todos: todos,                                                 // Mengirimkan data todos ke view.
+            page:'todo'
         });
     });
 });
 
+// Menjalankan server di port yang sudah didefinisikan dalam variabel lingkungan
 app.listen(port,()=>{
-    console.log(`Server running at http://localhost:${port}/`);
+    console.log(`Server running at http://localhost:${port}/`);         // Menampilkan pesan saat server berhasil dijalankan.
 });

@@ -13,15 +13,16 @@ let todos = [
 // endpoint untuk mendapatkan data Todos
 router.get('/', (req, res) => {res.json(todos); });
 
-router.post('/', (req, res)=> {
+router.post('/', (req, res) => {
     const newTodo = {
-        id: todos.length + 1,
+        id: todos.length + 1, // ID auto increment
         task: req.body.task,
         completed: false
-        };
-        todos.push(newTodo);
-        res.status(201).json(newTodo);
-})
+    };
+    todos.push(newTodo);
+    res.status(201).json(newTodo); // Pastikan mengirimkan response JSON
+});
+
 module.exports = router;
 
 router.delete('/:id',(req, res)=> {
